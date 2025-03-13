@@ -3,7 +3,10 @@ import pandas as pd
 import joblib
 from flask_cors import CORS
 
-# Initialize Flask app
+# ✅ Initialize Flask app (Corrected position)
+app = Flask(__name__)
+CORS(app)  # Enable CORS for frontend access
+
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
@@ -26,12 +29,10 @@ def predict():
         # Convert categorical columns into numbers (if they exist)
         if "Speciality" in df.columns:
             df.loc[:, "Speciality"] = df["Speciality"].apply(
-                lambda x: le_speciality.transform([x])[0] if x in le_speciality.classes_ else -1
-            )
+                lambda x: le_speciality.transform([x])[0] if x in le_speciality.classes_ else -1)
         if "Region" in df.columns:
             df.loc[:, "Region"] = df["Region"].apply(
-                lambda x: le_region.transform([x])[0] if x in le_region.classes_ else -1
-            )
+                lambda x: le_region.transform([x])[0] if x in le_region.classes_ else -1)
 
         # Filter dataset for the input hour
         filtered_df = df[df["Login Hour"] == input_hour]
@@ -45,7 +46,9 @@ def predict():
 
         # Make predictions
         predictions = model.predict(X_new)
-        filtered_df.loc[:, "Prediction"] = predictions
+
+        # ✅ Fix Indentation Error
+        filtered_df.loc[:, "Prediction"] = predictions  
 
         # Select likely doctors
         final_doctors = filtered_df[filtered_df["Prediction"] == 1][["NPI", "State", "Speciality"]]
