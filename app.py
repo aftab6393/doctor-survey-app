@@ -43,6 +43,8 @@ def predict():
 
         # Make predictions
         predictions = model.predict(X_new)
+
+
        filtered_df.loc[:, "Prediction"] = predictions
 
 
