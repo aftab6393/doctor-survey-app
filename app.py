@@ -4,9 +4,6 @@ import joblib
 from flask_cors import CORS
 
 # Initialize Flask app
-app = Flask(__name__)
-CORS(app)  # Enable CORS for frontend access
-
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
@@ -28,25 +25,27 @@ def predict():
 
         # Convert categorical columns into numbers (if they exist)
         if "Speciality" in df.columns:
-            df["Speciality"] = df["Speciality"].map(lambda x: le_speciality.transform([x])[0] if x in le_speciality.classes_ else -1)
+            df.loc[:, "Speciality"] = df["Speciality"].apply(
+                lambda x: le_speciality.transform([x])[0] if x in le_speciality.classes_ else -1
+            )
         if "Region" in df.columns:
-            df["Region"] = df["Region"].map(lambda x: le_region.transform([x])[0] if x in le_region.classes_ else -1)
+            df.loc[:, "Region"] = df["Region"].apply(
+                lambda x: le_region.transform([x])[0] if x in le_region.classes_ else -1
+            )
 
         # Filter dataset for the input hour
         filtered_df = df[df["Login Hour"] == input_hour]
 
         # Select input features
-        X_new = filtered_df[["Login Hour", "Usage Time (mins)", "Speciality", "Region", "Count of Survey Attempts"]]
+        features = ["Login Hour", "Usage Time (mins)", "Speciality", "Region", "Count of Survey Attempts"]
+        X_new = filtered_df[features]
 
         # Load trained model
         model = joblib.load("doctor_prediction_model.pkl")
 
         # Make predictions
         predictions = model.predict(X_new)
-
-
-       filtered_df.loc[:, "Prediction"] = predictions
-
+        filtered_df.loc[:, "Prediction"] = predictions
 
         # Select likely doctors
         final_doctors = filtered_df[filtered_df["Prediction"] == 1][["NPI", "State", "Speciality"]]
@@ -58,8 +57,8 @@ def predict():
         return send_file(output_file, as_attachment=True)
 
     except Exception as e:
-        return jsonify({"error": str(e)})
+        return jsonify({"error": str(e)}), 400
 
-# Run the Flask app
+# ✅ Run the Flask app
 if __name__ == "__main__":
     app.run(debug=True)
