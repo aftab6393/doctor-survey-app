@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Survey Prediction</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #007bff, #6610f2);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            text-align: center;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-custom {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            transition: 0.3s;
+        }
+
+        .btn-custom:hover {
+            background: linear-gradient(135deg, #ff4b2b, #ff416c);
+            transform: scale(1.05);
+            box-shadow: 0px 5px 15px rgba(255, 75, 43, 0.5);
+        }
+
+        .input-custom {
+            text-align: center;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 18px;
+            border: 2px solid white;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .input-custom::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .alert {
+            font-weight: bold;
+        }
+    </style>
+
+    <script>
+        async function getPredictions() {
+            let hour = document.getElementById("timeInput").value;
+            let btn = document.getElementById("predictBtn");
+            let message = document.getElementById("message");
+
+            if (hour === "") {
+                message.innerHTML = '<div class="alert alert-warning">⚠️ Please enter a valid hour.</div>';
+                return;
+            }
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            btn.disabled = true;
+            message.innerHTML = "";
+
+            try {
+                let response = await fetch("http://127.0.0.1:5000/predict", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ "hour": hour })
+                });
+
+                if (response.ok) {
+                    let blob = await response.blob();
+                    let link = document.createElement("a");
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = "filtered_doctors.csv";
+                    link.click();
+                    message.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle"></i> File downloaded successfully!</div>';
+                } else {
+                    message.innerHTML = '<div class="alert alert-danger"><i class="fas fa-times-circle"></i> Error fetching predictions.</div>';
+                }
+            } catch (error) {
+                message.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Server error. Try again later.</div>';
+            }
+
+            btn.innerHTML = 'Predict <i class="fas fa-arrow-right"></i>';
+            btn.disabled = false;
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <h2><i class="fas fa-user-md"></i> Doctor Survey Prediction</h2>
+                    <p>Enter the hour to find the best doctors for your survey.</p>
+                    
+                    <div class="mb-3">
+                        <label for="timeInput" class="form-label"><i class="far fa-clock"></i> Enter Time (Hour):</label>
+                        <input type="number" id="timeInput" min="0" max="23" class="form-control input-custom" placeholder="e.g., 10">
+                    </div>
+
+                    <button id="predictBtn" class="btn btn-custom" onclick="getPredictions()">
+                        Predict <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <div id="message" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
