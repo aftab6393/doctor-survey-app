@@ -66,7 +66,9 @@ def predict():
 
         # ✅ Make predictions
         predictions = model.predict(X_new)
+        filtered_df = filtered_df.copy()  # ✅ Fixes SettingWithCopyWarning
         filtered_df.loc[:, "Prediction"] = predictions
+
 
         # ✅ Select likely doctors
         final_doctors = filtered_df[filtered_df["Prediction"] == 1][["NPI", "State", "Speciality"]]
