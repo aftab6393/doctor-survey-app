@@ -1,16 +1,16 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file,render_template
 import pandas as pd
 import joblib
 from flask_cors import CORS
 
 # Initialize Flask app
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates", static_folder="static") 
 CORS(app)  # Enable CORS for frontend access
 
 # ✅ Add a Home Route to Fix 404 Error
 @app.route("/")
 def home():
-    return "Welcome to the Doctor Survey Prediction API! Use /predict"
+     return render_template("index.html")
 
 @app.route("/predict", methods=["POST"])
 def predict():
