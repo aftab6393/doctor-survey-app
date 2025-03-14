@@ -19,6 +19,5 @@ venv/
 *.dll
 *.log
 *.csv
-dummy_npi_data.xlsx
 package-lock.json
 package.json
