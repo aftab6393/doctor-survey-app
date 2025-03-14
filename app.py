@@ -83,7 +83,8 @@ def predict():
         output_file = "filtered_doctors.csv"
         final_doctors.to_csv(output_file, index=False)
 
-        return send_file(output_file, as_attachment=True)
+        return jsonify(final_doctors.to_dict(orient="records"))
+
 
     except Exception as e:
         print(f"❌ Error: {e}")  # Debug Log
